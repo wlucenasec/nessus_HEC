@@ -9,7 +9,7 @@ Certainly, the parse of such a CSV file is not something that you can do easily,
 
 The good news is that technology exists to make our lives a little bit easy, let's dive in and take the most of it.
 
-# HEC - Http Event Collector
+# HEC - HTTP Event Collector
 
 To start, the HEC configuration on Splunk's side is required. By the way, what is HEC?
 
