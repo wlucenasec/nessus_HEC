@@ -8,3 +8,11 @@ Nessus Professional is a really great tool for performing vulnerability scans, b
 Certainly, the parse of such a CSV file is not something that you can do easily, huh!?
 
 The good news is that technology exists to make our lives a little bit easy, let's dive in and take the most of it.
+
+# HEC - Http Event Collector
+
+To start, the HEC configuration on Splunk's side is required. By the way, what is HEC?
+
+*The HTTP Event Collector (HEC) is a fast and efficient way to send data to Splunk Enterprise and Splunk Cloud. Notably, HEC enables you to send data over HTTP (or HTTPS) directly to Splunk Enterprise or Splunk Cloud from your application. Also, HEC is token-based, so you never need to hard-code your Splunk Enterprise or Splunk Cloud credentials in your app or supporting files.*
+
+As now we have an idea of what HEC it is, let's move on for configuration.
