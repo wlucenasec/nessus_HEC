@@ -4,4 +4,4 @@
 
 ![Vulnerability Process](/images/vulnerability-assessment.png)
 
-Step-by-step : https://medium.com/@lucenaxpl0it/the-easiest-way-for-pushing-nessus-scan-results-into-splunk-via-python-51a0affa7b60
+Step-by-step : https://medium.com/@wlucenasec/the-easiest-way-for-pushing-nessus-scan-results-into-splunk-via-python-51a0affa7b60
