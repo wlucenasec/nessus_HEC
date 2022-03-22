@@ -27,4 +27,6 @@
 1. `git clone https://github.com/wlucenasec/nessus_HEC.git`
 2. `python3 nessus_HEC.py`
 
+YouTube Video walking through the process: https://youtu.be/d99NNH14iR0
+
 Step-by-step : https://medium.com/@wlucenasec/the-easiest-way-for-pushing-nessus-scan-results-into-splunk-via-python-51a0affa7b60
