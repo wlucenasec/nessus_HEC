@@ -1,0 +1,10 @@
+{
+	"Splunk":{
+		"Address":"localhost",
+		"Port":8088
+		},
+	"Nessus":{
+		"Address":"localhost",
+		"Port":8834
+		}
+}
