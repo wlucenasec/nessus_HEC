@@ -1,40 +1,61 @@
-import requests, json
+import requests, json,os, time
 
-HEC_token = "4f8a3c6c-bbb8-4d0b-9a3b-4d9168abafe3" #YOUR HEC TOKEN
-splunk_address = "localhost" #YOUR SPLUNK IP OR HOSTNAME
+serverproperties = json.loads(open('servers.json').read())
+splunk_address = f'{serverproperties["Splunk"]["Address"]}'+":"+f'{serverproperties["Splunk"]["Port"]}'
+nessusScan_URL = "https://"+f'{serverproperties["Nessus"]["Address"]}'+":"+f'{serverproperties["Nessus"]["Port"]}'+"/scans/"
+nessusScan_Hosts = nessusScan_URL+"/hosts/"
 
-nessusScan_URL = "https://192.168.15.20:8834/scans/13/" #YOUR NESSUS SCAN URL
-nessusScan_Hosts = nessusScan_URL+"/hosts/"       
-nessus_Auth = {'X-ApiKeys': "accessKey={YOUR ACCESS KEY}; secretKey={YOUR SECRET KEY}"}
+HEC_TOKEN = os.getenv('HEC_TOKEN') 
+nessus_Auth = { 'X-ApiKeys': "accessKey="+os.getenv('N_ACCESS_KEY')+"; secretKey="+os.getenv('N_SECRET_KEY')}
 
 def main():
-    getNessusScan()
-    
-def getNessusScan():
-    response_Nessus = requests.request("GET", nessusScan_URL, headers=nessus_Auth, verify=False)
+    try:
+        check_scans = requests.request("GET",nessusScan_URL, headers=nessus_Auth,verify=False)
+        for ScanID in json.loads(check_scans.text)['scans']:
+            nessusScanHistory = requests.request("GET", nessusScan_URL + f'{ScanID["id"]}'+"?limit=2500&includeHostDetailsForHostDiscovery=true", headers=nessus_Auth,verify=False)
+            scanner_start = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(json.loads(nessusScanHistory.text)['info']['scanner_start']))
+            scanner_end = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(json.loads(nessusScanHistory.text)['info']['scanner_end']))
+            scanner_status=json.loads(nessusScanHistory.text)['info']['status']
+            getNessusScan(ScanID['id'],scanner_start,scanner_end,scanner_status)
+    except Exception as NessusError:
+        print(NessusError)
+
+def getNessusScan(ScanID,scanner_start,scanner_end,scanner_status):
+    response_Nessus = requests.request("GET", nessusScan_URL + f'{ScanID}', headers=nessus_Auth,verify=False)
     if response_Nessus.status_code == 200:
-        parseJSON = json.loads(response_Nessus.text)
-        for machine in parseJSON['hosts']:
-            url_hostid = nessusScan_Hosts + str(machine['host_id'])
-            hostname = {'hostname':str(machine['hostname'])}
-            response_host = requests.request("GET", url_hostid, headers=nessus_Auth, verify=False)
-            parseJSON_Host = json.loads(response_host.text)
-            for vulnerability in parseJSON_Host['vulnerabilities']:
-                vulnerability.update(hostname)
-                sendSplunk(vulnerability)
+        try:
+            for machine in json.loads(response_Nessus.text)['hosts']:
+                hostname = {'hostname':str(machine['hostname'])}
+                response_host = requests.request("GET", nessusScan_URL + f'{ScanID}' +f"/hosts/{machine['host_id']}", headers=nessus_Auth, verify=False)
+                for vulnerability in json.loads(response_host.text)['vulnerabilities']:
+                    response_plugin = requests.request("GET", nessusScan_URL + f'{ScanID}' +\
+                        f"/hosts/{machine['host_id']}/plugins/{vulnerability['plugin_id']}",\
+                        headers=nessus_Auth, verify=False)
+                    vulnerability.update(json.loads(response_plugin.text))
+                    vulnerability.update(hostname)
+                    vulnerability.update({'scanner_start':str(scanner_start)})
+                    vulnerability.update({'scanner_end':str(scanner_end)})
+                    vulnerability.update({'scanner_status':str(scanner_status)})
+                    sendSplunk(vulnerability)
+        except:
+            next
     else:
         print("The server seems not working.")
 
 def sendSplunk(nessus_Scan):
     data = {}
-    data.update({"index":"idx_nessus"})
-    data.update({"sourcetype":"nessuspro"})
-    data.update({"source":"index_nessus"})
+    data.update({"index":"main"})
+    data.update({"sourcetype":"_json"})
     data.update({"host":"nessus"})
     data.update({"event":nessus_Scan})  
-    HEC_url = "https://"+splunk_address+":8088/services/collector/event"
-    authheader = {'Authorization': 'Splunk '+HEC_token}
-    send = requests.request("POST",HEC_url,headers=authheader,json=data,verify=False)
+    HEC_url = "https://"+splunk_address+"/services/collector/event"
+    authheader = {'Authorization': 'Splunk '+f'{HEC_TOKEN}'}
+    try:
+        send = requests.request("POST",HEC_url,headers=authheader,json=data,verify=False)
+        if send.status_code!=200:
+            print("Vulnerability was not sent to Splunk.")
+    except Exception as SplunkError:
+        print(SplunkError)
 
 if __name__ == "__main__":
     main()
