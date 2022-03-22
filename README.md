@@ -12,7 +12,7 @@
 
 1. API Access Token and Secret Key of Nessus Professional
 2. Splunk HTTP Event Collector Token
-3. System variables 
+3. Environment variables 
 
 | Variable Name      | Description     |
 | ------------------ | ----------------|
@@ -20,6 +20,7 @@
 | N_ACCESS_KEY       | Nessus Access Key|
 | N_SECRET_KEY       | Nessus Secret Key|
 
+4. Change the `servers.json` file with your Nessus and Splunk IP or hostname
 
 ### How to use it
 
