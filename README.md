@@ -2,7 +2,7 @@
 
 | Created      | Modified     |
 | ------------ | -------------|
-| Nov 20, 2020 | Mar 21, 2022 |
+| Nov 20, 2020 | Nov 18, 2022 |
 
 *If you manage **`Nessus`** Professional and **`Splunk`** at your company, you must read this guide to overcome some barriers encountered towards the vulnerability management process.*
 

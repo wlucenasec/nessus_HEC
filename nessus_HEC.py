@@ -26,7 +26,7 @@ def getNessusScan(ScanID,scanner_start,scanner_end,scanner_status):
         try:
             for machine in json.loads(response_Nessus.text)['hosts']:
                 hostname = {'hostname':str(machine['hostname'])}
-                response_host = requests.request("GET", nessusScan_URL + f'{ScanID}' +f"/hosts/{machine['host_id']}", headers=nessus_Auth, verify=False)
+                response_host = requests.request("GET", nessusScan_URL + f'{ScanID}' +f"/hosts/{machine['host_id']}", headers=nessus_Auth, verify=True)
                 for vulnerability in json.loads(response_host.text)['vulnerabilities']:
                     response_plugin = requests.request("GET", nessusScan_URL + f'{ScanID}' +\
                         f"/hosts/{machine['host_id']}/plugins/{vulnerability['plugin_id']}",\
