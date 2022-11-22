@@ -1,7 +1,7 @@
 import requests, json,os, time
 
 serverproperties = json.loads(open('servers.json').read())
-splunk_address = f'{serverproperties["Splunk"]["Address"]}'+":"+f'{serverproperties["Splunk"]["Port"]}'
+splunk_address = f'{serverproperties["Splunk"]["Protocol"]}'+"://"+f'{serverproperties["Splunk"]["Address"]}'+":"+f'{serverproperties["Splunk"]["Port"]}'
 nessusScan_URL = "https://"+f'{serverproperties["Nessus"]["Address"]}'+":"+f'{serverproperties["Nessus"]["Port"]}'+"/scans/"
 nessusScan_Hosts = nessusScan_URL+"/hosts/"
 
@@ -19,6 +19,7 @@ def main():
             getNessusScan(ScanID['id'],scanner_start,scanner_end,scanner_status)
     except Exception as NessusError:
         print(NessusError)
+        
 
 def getNessusScan(ScanID,scanner_start,scanner_end,scanner_status):
     response_Nessus = requests.request("GET", nessusScan_URL + f'{ScanID}', headers=nessus_Auth,verify=False)
@@ -48,7 +49,7 @@ def sendSplunk(nessus_Scan):
     data.update({"sourcetype":"_json"})
     data.update({"host":"nessus"})
     data.update({"event":nessus_Scan})  
-    HEC_url = "https://"+splunk_address+"/services/collector/event"
+    HEC_url = splunk_address+"/services/collector/event"
     authheader = {'Authorization': 'Splunk '+f'{HEC_TOKEN}'}
     try:
         send = requests.request("POST",HEC_url,headers=authheader,json=data,verify=False)
